@@ -1,4 +1,4 @@
-# bitcoinjs_keychain
+# bitcoinjs-keychain
 
 status: ALPHA
 
