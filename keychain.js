@@ -19,9 +19,7 @@ class Keychain {
 
   constructor(store) {
     this.storeKeyString = "__coinjs_keychain_private_key"
-    this.apiRoot = "https://blockchain.info"
-    this.balanceURL = `${this.apiRoot}/balance?active=`
-
+    this.apiRoot = "https://api.blockcypher.com/v1/btc/main"
     this.debug   = true
     // this.debug   = false
     this.store   = store || localStorage
@@ -33,22 +31,26 @@ class Keychain {
     this.logInit()
   }
 
+  balanceUrl(address) {
+    return `${this.apiRoot}/addrs/${address}/balance`
+  }
+
   async balance() {
-    const resp = await this.fetchJson(`${this.balanceURL}${this.address}`)
+    const url     = this.balanceUrl(this.address)
+    const resp    = await this.fetchJson(url)
     const balance = this.balanceParse(resp)
     return resp
   }
 
   async balanceOrigAddr() {
-    const resp = await this.fetchJson(`${this.balanceURL}${this.addressOrig}`)
+    const url     = this.balanceUrl(this.addressOrig)
+    const resp    = await this.fetchJson(url)
     const balance = this.balanceParse(resp)
     return balance
   }
 
   balanceParse(balanceResp) {
-    const value = Object.values(balanceResp)[0]
-    const balance = value.final_balance
-    return balance
+    return balanceResp.balance
   }
 
   async fetchJson(url) {
@@ -76,10 +78,19 @@ class Keychain {
     }
   }
 
-  getAddress() {
+  getScriptPubKey() {
     const pubKey = this.pvtKey.getPublicKeyBuffer()
-    const scriptPubKey = encodeWPKHOutput(hash160(pubKey))
-    return bitcoin.address.fromOutputScript(scriptPubKey)
+    return encodeWPKHOutput(hash160(pubKey))
+  }
+
+  getAddress() {
+    let scriptPubKey = bitcoin.address.fromOutputScript(this.getScriptPubKey())
+    const address = bitcoin.script.scriptHash.output.encode(hash160(scriptPubKey))
+    return address.toString()
+  }
+
+  getAddressScript() {
+    return bitcoin.address.fromOutputScript(this.getScriptPubKey())
   }
 
   getAddressOrig() {
@@ -96,6 +107,25 @@ class Keychain {
 
   storeKey() {
     return this.store[this.storeKeyString]
+  }
+
+  send({to, amount}) {
+    const transaction = this.buildTX({ to: to, amount: amount })
+    const txHex = tx.toHex()
+    // c.log("transaction: ", transaction)
+    c.log("transaction (hex): ", txHex)
+  }
+
+  buildTX({to, amount}) {
+    const unspent = {}
+    const keyPair = this.pvtKey()
+    const redeemScript = this.getScriptPubKey()
+
+    const txb = new bitcoin.TransactionBuilder(testnet)
+    txb.addInput(unspent.txId, unspent.vout)
+    txb.addOutput(testnetUtils.RETURN_ADDRESS, 4e4)
+    txb.sign(0, keyPair, redeemScript, null, unspent.value)
+    return txb.build()
   }
 
   logInit() {

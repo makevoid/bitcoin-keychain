@@ -25,14 +25,15 @@ it('inits - loads a key', () => {
 it('derives addresses', () => {
   const keychain = keyChain()
   expect(keychain.address).toBe("bc1q0jvhy7fjvyptq2sej4p2tl9qs6rhkasfl0730j")
+  expect(keychain.addressOrig[0]).toBe("3")
   expect(keychain.addressOrig).toBe("1CMpcUzm3n9ftMRDGwKg8KX2xLpHquxtSm")
 })
-// 
-// it('gets balance', async () => {
-//   const keychain = keyChain()
-//   const balance = await keychain.balance()
-//   expect(balance).toBe(0)
-// })
+
+it('gets balance', async () => {
+  const keychain = keyChain()
+  const balance = await keychain.balance()
+  expect(balance).toBe(0)
+})
 
 it('gets balance (non-segwit address)', async () => {
   const keychain = keyChain()
