@@ -1,3 +1,5 @@
+'use strict'
+
 const c = console
 const bitcoin = require('bitcoinjs-lib')
 const hash160 = bitcoin.crypto.hash160
@@ -9,8 +11,8 @@ require('isomorphic-fetch')
 class BalanceInvalidAddressException extends Error {
   constructor(url) {
     super()
-    this.message = `Invalid Address calling Balance url: ${url}`;
-    this.name = 'BalanceInvalidAddressException';
+    this.message = `Invalid Address calling Balance url: ${url}`
+    this.name = 'BalanceInvalidAddressException'
   }
 }
 
@@ -18,8 +20,8 @@ class BalanceInvalidAddressException extends Error {
 class Keychain {
 
   constructor(store) {
-    this.storeKeyString = "__coinjs_keychain_private_key"
-    this.apiRoot = "https://api.blockcypher.com/v1/btc/main"
+    this.storeKeyString = '__coinjs_keychain_private_key'
+    this.apiRoot = 'https://api.blockcypher.com/v1/btc/main'
     this.debug   = true
     // this.debug   = false
     this.store   = store || localStorage
@@ -39,6 +41,7 @@ class Keychain {
     const url     = this.balanceUrl(this.address)
     const resp    = await this.fetchJson(url)
     const balance = this.balanceParse(resp)
+    c.log('balance:', balance)
     return resp
   }
 
@@ -57,7 +60,7 @@ class Keychain {
     const resp = await fetch(url)
     if (resp.status == 500) {
       const text = await resp.text()
-      if (text == "Invalid Bitcoin Address") {
+      if (text == 'Invalid Bitcoin Address') {
         throw new BalanceInvalidAddressException(url)
       }
     } else { // probably 200
@@ -71,7 +74,7 @@ class Keychain {
 
   loadOrGeneratePrivateKey() {
     const key = this.storeKey()
-    if (key && key != "") {
+    if (key && key != '') {
       return this.loadPrivateKey()
     } else {
       return this.generatePrivateKey()
@@ -111,19 +114,23 @@ class Keychain {
 
   send({to, amount}) {
     const transaction = this.buildTX({ to: to, amount: amount })
-    const txHex = tx.toHex()
-    // c.log("transaction: ", transaction)
-    c.log("transaction (hex): ", txHex)
+    const txHex = transaction.toHex()
+    c.log('transaction: ', transaction)
+    c.log('transaction (hex): ', txHex)
   }
 
   buildTX({to, amount}) {
     const unspent = {}
     const keyPair = this.pvtKey()
     const redeemScript = this.getScriptPubKey()
+    c.log('to: ', to)
+    c.log('amount: ', amount)
 
+    const returnAddress = '1abc'
+    const testnet = null
     const txb = new bitcoin.TransactionBuilder(testnet)
     txb.addInput(unspent.txId, unspent.vout)
-    txb.addOutput(testnetUtils.RETURN_ADDRESS, 4e4)
+    txb.addOutput(returnAddress, 4e4)
     txb.sign(0, keyPair, redeemScript, null, unspent.value)
     return txb.build()
   }
