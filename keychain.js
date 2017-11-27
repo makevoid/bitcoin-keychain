@@ -4,6 +4,7 @@ const c = console
 const bitcoin = require('bitcoinjs-lib')
 const hash160 = bitcoin.crypto.hash160
 const encodeWPKHOutput = bitcoin.script.witnessPubKeyHash.output.encode
+const encodeScriptHash = bitcoin.script.scriptHash.output.encode
 
 require('es6-promise').polyfill()
 require('isomorphic-fetch')
@@ -22,8 +23,8 @@ class Keychain {
   constructor(store) {
     this.storeKeyString = '__coinjs_keychain_private_key'
     this.apiRoot = 'https://api.blockcypher.com/v1/btc/main'
-    this.debug   = true
-    // this.debug   = false
+    // this.debug   = true
+    this.debug   = false
     this.store   = store || localStorage
     this.pvtKey  = this.loadOrGeneratePrivateKey()
     this.index   = 0
@@ -41,8 +42,11 @@ class Keychain {
     const url     = this.balanceUrl(this.address)
     const resp    = await this.fetchJson(url)
     const balance = this.balanceParse(resp)
-    c.log('balance:', balance)
-    return resp
+    if (this.debug) {
+      c.log('resp:',    resp) 
+      c.log('balance:', balance)
+    }
+    return balance
   }
 
   async balanceOrigAddr() {
@@ -53,7 +57,7 @@ class Keychain {
   }
 
   balanceParse(balanceResp) {
-    return balanceResp.balance
+    return balanceResp.final_balance
   }
 
   async fetchJson(url) {
@@ -87,12 +91,11 @@ class Keychain {
   }
 
   getAddress() {
-    let scriptPubKey = bitcoin.address.fromOutputScript(this.getScriptPubKey())
-    const address = bitcoin.script.scriptHash.output.encode(hash160(scriptPubKey))
-    return address.toString()
+    const scriptPubKey = encodeScriptHash(hash160(this.getScriptPubKey()))
+    return bitcoin.address.fromOutputScript(scriptPubKey)
   }
 
-  getAddressScript() {
+  getAddressBase() {
     return bitcoin.address.fromOutputScript(this.getScriptPubKey())
   }
 
