@@ -21,17 +21,21 @@ class BalanceInvalidAddressException extends Error {
 class Keychain {
 
   constructor(store) {
-    this.storeKeyString = '__coinjs_keychain_private_key'
+    this.storedKeyString = '__coinjs_keychain_private_key'
     this.apiRoot = 'https://api.blockcypher.com/v1/btc/main'
     // this.debug   = true
     this.debug   = false
     this.store   = store || localStorage
-    this.pvtKey  = this.loadOrGeneratePrivateKey()
+    this.loadOrGeneratePrivateKey()
     this.index   = 0
+    this.setInstanceVariables()
+    this.logInit()
+  }
+
+  setInstanceVariables() {
     this.address      = this.getAddress()
     this.addressOrig  = this.getAddressOrig()
-    this.pvtKeyString = this.pvtKey.toWIF()
-    this.logInit()
+    this.pvtKeyString = this.getPrivateKeyWIF()
   }
 
   balanceUrl(address) {
@@ -43,7 +47,7 @@ class Keychain {
     const resp    = await this.fetchJson(url)
     const balance = this.balanceParse(resp)
     if (this.debug) {
-      c.log('resp:',    resp) 
+      c.log('resp:',    resp)
       c.log('balance:', balance)
     }
     return balance
@@ -77,11 +81,14 @@ class Keychain {
   }
 
   loadOrGeneratePrivateKey() {
-    const key = this.storeKey()
+    const key = this.storedKey()
     if (key && key != '') {
-      return this.loadPrivateKey()
+      this.pvtKey = this.loadPrivateKey()
     } else {
-      return this.generatePrivateKey()
+      const newKey = this.generatePrivateKey()
+      this.saveKey(newKey)
+      this.pvtKey = newKey
+      this.setInstanceVariables()
     }
   }
 
@@ -108,11 +115,19 @@ class Keychain {
   }
 
   loadPrivateKey() {
-    return bitcoin.ECPair.fromWIF(this.storeKey())
+    return bitcoin.ECPair.fromWIF(this.storedKey())
   }
 
-  storeKey() {
-    return this.store[this.storeKeyString]
+  getPrivateKeyWIF() {
+    return this.pvtKey.toWIF()
+  }
+
+  storedKey() {
+    return this.store[this.storedKeyString]
+  }
+
+  saveKey(key) {
+    this.store[this.storedKeyString] = key.toWIF()
   }
 
   send({to, amount}) {
@@ -120,6 +135,10 @@ class Keychain {
     const txHex = transaction.toHex()
     c.log('transaction: ', transaction)
     c.log('transaction (hex): ', txHex)
+  }
+
+  utxos() {
+    return []
   }
 
   buildTX({to, amount}) {

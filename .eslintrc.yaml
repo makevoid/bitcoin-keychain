@@ -8,7 +8,6 @@ parserOptions:
   sourceType: module
 rules:
   no-console: off
-  comma-dangle: [1, never]
   max-len: [error, 120]
   no-mixed-spaces-and-tabs: error
   no-tabs: error
@@ -17,7 +16,6 @@ rules:
   object-curly-spacing: [0, never]
   semi: [error, never]
   space-before-function-paren: 0
-  quotes: [error, single]
 globals:
   after: true
   afterEach: true

@@ -1,10 +1,14 @@
 {
   "dependencies": {
     "bitcoinjs-lib": "^3.3.0",
+    "browserify": "^16.1.1",
     "es6-promise": "^4.1.1",
     "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babelify": "^8.0.0",
     "jest": "^21.2.1"
   }
 }
