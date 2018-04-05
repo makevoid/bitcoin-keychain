@@ -50,5 +50,5 @@ it('gets balance (non-segwit address)', async () => {
 it('gets utxos', async () => {
   const keychain = keyChain()
   const utxos = await keychain.utxos()
-  expect(utxos).toBe([])
+  expect(utxos).toEqual([])
 })
