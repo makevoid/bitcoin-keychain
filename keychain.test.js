@@ -35,7 +35,6 @@ it('derives addresses (base)', () => {
   expect(adressBase).toBe('bc1q0jvhy7fjvyptq2sej4p2tl9qs6rhkasfl0730j')
 })
 
-
 it('gets balance', async () => {
   const keychain = keyChain()
   const balance = await keychain.balance()
@@ -46,4 +45,10 @@ it('gets balance (non-segwit address)', async () => {
   const keychain = keyChain()
   const balance = await keychain.balanceOrigAddr()
   expect(balance).toBe(0)
+})
+
+it('gets utxos', async () => {
+  const keychain = keyChain()
+  const utxos = await keychain.utxos()
+  expect(utxos).toBe([])
 })

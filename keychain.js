@@ -6,6 +6,11 @@ const hash160 = bitcoin.crypto.hash160
 const encodeWPKHOutput = bitcoin.script.witnessPubKeyHash.output.encode
 const encodeScriptHash = bitcoin.script.scriptHash.output.encode
 
+const bcApi   = require('blockchain-api-basic')
+// const balance = bcApi.balance
+const unspent  = bcApi.utxos
+const pushTx   = bcApi.pushTx
+
 require('es6-promise').polyfill()
 require('isomorphic-fetch')
 
@@ -137,8 +142,8 @@ class Keychain {
     c.log('transaction (hex): ', txHex)
   }
 
-  utxos() {
-    return []
+  async utxos() {
+    return unspent(this.address)
   }
 
   buildTX({to, amount}) {
