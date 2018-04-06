@@ -140,6 +140,11 @@ class Keychain {
     const txHex = transaction.toHex()
     c.log('transaction: ', transaction)
     c.log('transaction (hex): ', txHex)
+    const tx = {
+      status:     "OK",
+      serialized: txHex,
+    }
+    return tx
   }
 
   async utxos() {
@@ -148,9 +153,9 @@ class Keychain {
 
   buildTX({to, amount}) {
     const unspent = {}
-    const keyPair = this.pvtKey()
+    const keyPair = this.pvtKey
     const redeemScript = this.getScriptPubKey()
-    c.log('to: ', to)
+    c.log('to: ',     to)
     c.log('amount: ', amount)
 
     const returnAddress = '1abc'

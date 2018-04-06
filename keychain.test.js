@@ -52,3 +52,11 @@ it('gets utxos', async () => {
   const utxos = await keychain.utxos()
   expect(utxos).toEqual([])
 })
+
+it('sends a TX', async () => {
+  const keychain = keyChain()
+  const to = "1address"
+  const amount = 0.001 // bitcoin
+  const transaction = await keychain.send(to, amount)
+  expect(transaction.status).toEqual("SENT")
+})
