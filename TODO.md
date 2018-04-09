@@ -1,0 +1,1 @@
+- supports btc, bch, ltc, doge
