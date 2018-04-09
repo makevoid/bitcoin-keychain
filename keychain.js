@@ -1,6 +1,7 @@
 'use strict'
 
 const c = console
+const BN = require('bignumber.js')
 const bitcoin = require('bitcoinjs-lib')
 const hash160 = bitcoin.crypto.hash160
 const encodeWPKHOutput = bitcoin.script.witnessPubKeyHash.output.encode
@@ -135,10 +136,41 @@ class Keychain {
     this.store[this.storedKeyString] = key.toWIF()
   }
 
-  send({to, amount}) {
-    const transaction = this.buildTX({ to: to, amount: amount })
+  selectUtxo({ utxos, value }) {
+    const utxo = utxos.find((utxo) => (
+      utxo.value > value
+    ))
+    if (!utxo) throw Error("No UTXO available to spend, you don't seem to have enough funds to send this transaction.")
+    return utxo
+  }
+
+  satoshisToBTC({ value }) {
+    return new BN(value).multipliedBy( Math.pow(10, 8) ).toNumber()
+  }
+
+  validateSendArguments({ to, value }) {
+    const addressEmptyMsg = "Address not defined, please use a valid bitcoin address to send funds to."
+    const txValueEmptyMsg = "Transaction value is not specified, please specify the amount you want to send in BTC."
+    const txValueNaNMsg = "Transaction value is not a number, please specify the amount you want to send in BTC."
+    if (!to || to == "") throw new Error(addressEmptyMsg)
+    if (!value || value == "") throw new Error(txValueEmptyMsg)
+    if (isNaN(Number(value))) throw new Error(txValueNaNMsg)
+    return true
+  }
+
+  async send({ to, value }) {
+    this.validateSendArguments({ to, value })
+    value = this.satoshisToBTC({value})
+    // console.log("address:", this.address)
+    const utxos = await this.utxos(this.address)
+    const utxo = this.selectUtxo({ utxos, value })
+    const transaction = this.buildTX({ utxo: utxo, to: to, value: value })
     const txHex = transaction.toHex()
-    c.log('transaction: ', transaction)
+    // c.log('transaction: ', transaction)
+    // const witnesses = transaction.ins.map((txIn) => {
+    //   return txIn.witness
+    // })
+    // c.log('transaction witnesses: ', witnesses)
     c.log('transaction (hex): ', txHex)
     const tx = {
       status:     "OK",
@@ -151,19 +183,17 @@ class Keychain {
     return unspent(this.address)
   }
 
-  buildTX({to, amount}) {
-    const unspent = {}
+  buildTX({ utxo, to, value }) {
     const keyPair = this.pvtKey
     const redeemScript = this.getScriptPubKey()
-    c.log('to: ',     to)
-    c.log('amount: ', amount)
+    // c.log('to: ',     to)
+    // c.log('value: ', value)
 
-    const returnAddress = '1abc'
-    const testnet = null
-    const txb = new bitcoin.TransactionBuilder(testnet)
-    txb.addInput(unspent.txId, unspent.vout)
-    txb.addOutput(returnAddress, 4e4)
-    txb.sign(0, keyPair, redeemScript, null, unspent.value)
+    const txb = new bitcoin.TransactionBuilder()
+    // txb.addInput(utxo.txId, utxo.vout)
+    txb.addInput(utxo.tx_hash_big_endian, utxo.tx_output_n)
+    txb.addOutput(to, value)
+    txb.sign(0, keyPair, redeemScript, null, utxo.value)
     return txb.build()
   }
 

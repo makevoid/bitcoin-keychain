@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bignumber.js": "^6.0.0",
     "bitcoinjs-lib": "^3.3.0",
     "blockchain-api-basic": "^0.3.2",
     "browserify": "^16.1.1",
@@ -10,7 +11,8 @@
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babelify": "^8.0.0",
-    "jest": "^21.2.1"
+    "jest": "^21.2.1",
+    "jest-fetch-mock": "^1.5.0"
   },
   "name": "bitcoinjs-keychain",
   "description": "status: ALPHA",
@@ -18,6 +20,12 @@
   "main": "keychain.js",
   "scripts": {
     "test": "jest"
+  },
+  "jest": {
+    "automock": false,
+    "setupFiles": [
+      "./specHelper.js"
+    ]
   },
   "repository": {
     "type": "git",
