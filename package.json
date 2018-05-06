@@ -3,7 +3,6 @@
     "bignumber.js": "^6.0.0",
     "bitcoinjs-lib": "^3.3.2",
     "blockchain-api-basic": "^0.3.2",
-    "browserify": "^16.2.0",
     "es6-promise": "^4.2.4",
     "isomorphic-fetch": "^2.2.1"
   },
@@ -11,8 +10,9 @@
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.6.1",
     "babelify": "^8.0.0",
-    "jest": "^21.2.1",
-    "jest-fetch-mock": "^1.5.0"
+    "browserify": "*",
+    "jest": "*",
+    "jest-fetch-mock": "*"
   },
   "name": "bitcoinjs-keychain",
   "description": "status: ALPHA",
