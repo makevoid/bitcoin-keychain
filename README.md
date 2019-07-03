@@ -1,6 +1,6 @@
 # bitcoinjs-keychain
 
-status: ALPHA
+*status:* ALPHA
 
 BitcoinJS Keychain (Wallet) based off bitcoinjs-lib --- supports segwit addresses and transactions
 
